@@ -1,49 +1,97 @@
-# TrafficEye AI
+<div align="center">
 
-TrafficEye AI is a full-stack, AI-powered traffic enforcement command center. It uses computer vision (YOLOv8) and optical character recognition (EasyOCR) to automatically detect violations like driving without a helmet or triple riding, and extracts the license plate of the offending vehicle.
+# 👁️ TrafficEye AI
 
-## Tech Stack
-- **Backend**: FastAPI, SQLModel, PostgreSQL (via Supabase), Ultralytics YOLOv8, EasyOCR, OpenCV
-- **Frontend**: React, Vite, Tailwind CSS, Recharts
-- **Storage**: Supabase Storage
-- **AI Insights**: Google Gemini API
+**Every violation. Automatically caught.**
 
-## Project Structure
-- `/backend`: The FastAPI application, AI models, and PostgreSQL database integration.
-- `/frontend`: The React command-center dashboard UI.
+[![Built with React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react&logoColor=black)](#)
+[![Powered by FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)](#)
+[![YOLOv8 Detection](https://img.shields.io/badge/Ultralytics-YOLOv8-FF1493)](#)
+[![Database Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)](#)
 
-## How to Run the Backend
-1. Open a terminal and navigate to the `backend` folder.
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Set up your environment variables. Copy `.env.example` to `.env` and fill in your Supabase database and storage credentials, and Gemini API key:
-   - `SUPABASE_DB_URL`
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `GEMINI_API_KEY`
-4. Start the FastAPI server:
-   ```bash
-   uvicorn main:app --reload
-   ```
-   The backend will run at `http://localhost:8000`.
+*An AI-powered command center built for the Gridlock Hackathon 2.0 (Flipkart × Bengaluru Traffic Police).*
 
-## How to Run the Frontend
-1. Open a terminal and navigate to the `frontend` folder.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-   The frontend will run at `http://localhost:5173`.
+</div>
 
-## Core API Endpoints
-- `POST /api/analyze/`: Upload an image to run the full detection pipeline.
-- `GET /api/analytics/`: Retrieve aggregated violation statistics.
-- `GET /api/analytics/insights`: Retrieve an AI-generated actionable insight based on the current stats.
-- `GET /api/violations/`: Retrieve a paginated list of all violations.
-- `GET /api/violations/{vehicle_number}`: Retrieve all violations for a specific plate.
+---
+
+## 🚦 Overview
+
+**TrafficEye AI** is a full-stack, AI-driven traffic enforcement command center designed to scale manual enforcement operations. It uses computer vision to automatically detect multi-class violations and optical character recognition (OCR) to extract license plates in real-time. 
+
+With structured logging and temporal analytics, TrafficEye AI turns unstructured traffic photos into actionable intelligence, catching repeat offenders who would otherwise slip under the radar.
+
+### ✨ What It Detects
+- **TFC-01 (Helmet Violation)**: Detects unhelmeted riders overlapping with active motorcycles.
+- **TFC-02 (Triple Riding)**: Flags motorcycles carrying three or more passengers.
+- **License Plate OCR**: Localizes and extracts registration text using EasyOCR.
+- **Evidence Generation**: Hard-burns verification bounding boxes and confidence scores directly onto proof imagery.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Computer Vision Pipeline**: Ultralytics YOLOv8, EasyOCR, OpenCV
+- **Backend Infrastructure**: FastAPI, SQLModel (ORM), Supabase (PostgreSQL & Blob Storage)
+- **Frontend Dashboard**: React, Vite, Tailwind CSS, Recharts
+- **Insights Engine**: Google Gemini API
+
+---
+
+## 🚀 Quick Start Guide
+
+### 1. Backend Setup
+
+The backend handles the AI inference pipeline, image processing, and database interactions.
+
+```bash
+# Navigate to the backend directory
+cd backend
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Configure environment variables
+# Copy .env.example to .env and provide your Supabase/Gemini credentials
+cp .env.example .env
+
+# Start the FastAPI server
+uvicorn main:app --reload
+```
+*API runs at `http://localhost:8000`*
+
+### 2. Frontend Setup
+
+The frontend provides the Command Center UI and live dashboard.
+
+```bash
+# Navigate to the frontend directory
+cd frontend
+
+# Install Node dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+*App runs at `http://localhost:5173`*
+
+---
+
+## 📡 Core API Reference
+
+The backend provides a robust REST API for integrating the vision pipeline with external tools:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/analyze/` | `POST` | Upload an image to run the full detection & OCR pipeline. |
+| `/api/violations/` | `GET` | Retrieve a paginated log of all processed violations. |
+| `/api/violations/{plate}`| `GET` | Retrieve the specific violation history for a single vehicle. |
+| `/api/analytics/` | `GET` | Fetch aggregated temporal and statistical violation data. |
+| `/api/analytics/insights`| `GET` | Generate an actionable AI-driven summary based on live metrics. |
+
+---
+
+<div align="center">
+  <p><i>Manual enforcement doesn't scale. TrafficEye AI does.</i></p>
+</div>
