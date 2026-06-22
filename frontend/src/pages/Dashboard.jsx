@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [insightsLoading, setInsightsLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/analytics`)
+    fetch(`${API_BASE_URL}/api/analytics/`)
       .then(res => {
         if (!res.ok) throw new Error('Failed to connect to analytics feed.');
         return res.json();
@@ -27,7 +27,7 @@ export default function Dashboard() {
         setLoading(false);
       });
 
-    fetch(`${API_BASE_URL}/api/analytics/insights`)
+    fetch(`${API_BASE_URL}/api/analytics/insights/`)
       .then(res => res.json())
       .then(json => {
         setInsights(json.insights);

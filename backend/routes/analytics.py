@@ -121,5 +121,5 @@ def get_insights(session: Session = Depends(get_session)) -> Dict[str, str]:
         return {"insights": response.text.strip()}
     except Exception as e:
         print(f"Gemini API Error: {e}")
-        return {"insights": "AI engine temporarily unavailable. Could not generate automated insights at this time."}
+        return {"insights": "AI Insights are currently unavailable due to rate limits."}
 

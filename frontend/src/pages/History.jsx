@@ -24,7 +24,7 @@ export default function History() {
       // Fetch specific plate history or general paginated history
       const endpoint = plate 
         ? `${API_BASE_URL}/api/violations/${encodeURIComponent(plate)}`
-        : `${API_BASE_URL}/api/violations`;
+        : `${API_BASE_URL}/api/violations/`;
         
       const res = await fetch(endpoint);
       if (!res.ok) throw new Error('Failed to retrieve history records.');
