@@ -43,10 +43,11 @@ def get_analytics(session: Session = Depends(get_session)) -> Dict[str, Any]:
     # 4. Top repeat offenders
     # Top 5 vehicle numbers with >= 2 violations
     repeat_offenders_query = (
-        select(Violation.vehicle_number, func.count(Violation.id))
+        select(Violation.vehicle_number, func.count(Violation.id), func.max(Violation.vehicle_type))
         .where(Violation.vehicle_number.is_not(None))
         .where(Violation.vehicle_number != "")
         .where(Violation.vehicle_number != "UNREADABLE")
+        .where(~Violation.vehicle_number.contains("No Plate Detected"))
         .group_by(Violation.vehicle_number)
         .having(func.count(Violation.id) >= 2)
         .order_by(func.count(Violation.id).desc())
@@ -55,15 +56,22 @@ def get_analytics(session: Session = Depends(get_session)) -> Dict[str, Any]:
     repeat_offenders_results = session.exec(repeat_offenders_query).all()
     
     top_repeat_offenders = [
-        {"vehicle_number": v_num, "count": count}
-        for v_num, count in repeat_offenders_results
+        {"vehicle_number": v_num, "count": count, "vehicle_type": v_type}
+        for v_num, count, v_type in repeat_offenders_results
     ]
+    # 5. Violations by location
+    location_counts_analytics = session.exec(
+        select(Violation.location, func.count(Violation.id))
+        .group_by(Violation.location)
+    ).all()
+    violations_by_location = {loc: count for loc, count in location_counts_analytics}
     
     return {
         "total_violations": total_violations,
         "today_count": today_count,
         "violations_by_type": violations_by_type,
         "violations_by_hour": violations_by_hour,
+        "violations_by_location": violations_by_location,
         "top_repeat_offenders": top_repeat_offenders
     }
 
@@ -86,20 +94,23 @@ def get_insights(session: Session = Depends(get_session)) -> Dict[str, str]:
     violations_by_type = {v_type: count for v_type, count in type_counts}
     hour_counts = Counter(ts.hour for ts in timestamps if ts)
     violations_by_hour = {str(hour): hour_counts.get(hour, 0) for hour in range(24)}
+    
+    location_counts = session.exec(
+        select(Violation.location, func.count(Violation.id))
+        .group_by(Violation.location)
+    ).all()
+    violations_by_location = {loc: count for loc, count in location_counts}
 
     if not timestamps:
          return {"insights": "Insufficient data to generate AI insights. Complete more scans to build a baseline."}
 
     prompt = f"""
-    You are an AI assistant for a traffic enforcement command center.
-    Here is the recent violation data:
-    Violations by Type: {violations_by_type}
-    Violations by Hour (0-23): {violations_by_hour}
+    Act as a Traffic Police Strategic AI. Analyze the locations and hours, and output a 2-sentence 'Predictive Deployment Strategy'. Specifically state WHICH location has the highest probability of future violations and at WHAT hour patrol units should be deployed there to intercept them.
     
-    Please provide a very concise, 2-3 sentence insight that identifies:
-    1. The most common violation
-    2. The peak violation hours
-    3. One actionable enforcement recommendation for the traffic department.
+    Here is the recent violation data:
+    Violations by Hour (0-23): {violations_by_hour}
+    Violations by Location: {violations_by_location}
+    
     Do not use markdown formatting like bolding or bullet points, just write a plain text paragraph.
     """
 

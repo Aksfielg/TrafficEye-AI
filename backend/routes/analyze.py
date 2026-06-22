@@ -2,7 +2,7 @@ import os
 import shutil
 import uuid
 import time
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlmodel import Session
 
 from database import get_session
@@ -25,7 +25,11 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(EVIDENCE_DIR, exist_ok=True)
 
 @router.post("/")
-async def analyze_image(file: UploadFile = File(...), session: Session = Depends(get_session)):
+async def analyze_image(
+    file: UploadFile = File(...), 
+    location: str = Form("Unknown"),
+    session: Session = Depends(get_session)
+):
     """
     Analyzes an uploaded image for traffic violations.
     """
@@ -60,6 +64,11 @@ async def analyze_image(file: UploadFile = File(...), session: Session = Depends
         for v in violations:
             vehicle_bbox = v['vehicle_bbox']
             plate_text = read_plate(source_path, vehicle_bbox)
+            
+            v_class = v.get('vehicle_class', 'Vehicle').capitalize()
+            if not plate_text or plate_text.strip() == "" or plate_text.lower() == "unreadable":
+                plate_text = f"{v_class} (No Plate Detected)"
+                
             v['vehicle_number'] = plate_text
             processed_violations.append(v)
             
@@ -80,8 +89,10 @@ async def analyze_image(file: UploadFile = File(...), session: Session = Depends
         for v in processed_violations:
             db_violation = Violation(
                 vehicle_number=v.get('vehicle_number'),
+                vehicle_type=v.get('vehicle_class', 'Vehicle').capitalize(),
                 violation_type=v['violation_type'],
                 confidence=v['confidence'],
+                location=location,
                 image_url=evidence_url,
                 evidence_image_path=evidence_path,
                 source_image_path=source_path
@@ -97,7 +108,9 @@ async def analyze_image(file: UploadFile = File(...), session: Session = Depends
             response_data.append({
                 "type": v['violation_type'],
                 "confidence": v['confidence'],
-                "vehicle_number": v['vehicle_number']
+                "vehicle_number": v['vehicle_number'],
+                "vehicle_type": v.get('vehicle_class', 'Vehicle').capitalize(),
+                "location": location
             })
             
         # 8. Return JSON

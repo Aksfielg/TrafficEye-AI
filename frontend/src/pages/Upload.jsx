@@ -11,6 +11,7 @@ const STATUS_MESSAGES = [
 export default function Upload() {
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [location, setLocation] = useState("Koramangala 100ft Road");
   const [isDragging, setIsDragging] = useState(false);
   const [status, setStatus] = useState('idle'); // 'idle', 'analyzing', 'error'
   const [statusText, setStatusText] = useState('');
@@ -71,6 +72,7 @@ export default function Upload() {
 
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('location', location);
 
     try {
       // Send POST request to backend
@@ -96,6 +98,27 @@ export default function Upload() {
 
   return (
     <div className="h-full min-h-[75vh] flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl mb-6 relative">
+        <label className="font-mono text-sm font-bold text-concrete tracking-widest uppercase mb-2 block">
+          SELECT CAMERA FEED
+        </label>
+        <div className="relative">
+          <select 
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="w-full bg-black border-2 border-concrete/20 text-amber font-mono text-xl font-bold tracking-[0.2em] px-6 py-4 focus:outline-none focus:border-amber transition-colors uppercase appearance-none cursor-pointer"
+          >
+            <option value="Koramangala 100ft Road">Koramangala 100ft Road</option>
+            <option value="Indiranagar 100ft Road">Indiranagar 100ft Road</option>
+            <option value="Silk Board Junction">Silk Board Junction</option>
+            <option value="Whitefield Main Road">Whitefield Main Road</option>
+          </select>
+          <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none">
+            <svg className="w-6 h-6 text-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="square" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
+      </div>
+
       {!previewUrl ? (
         // Drop Zone State
         <div 

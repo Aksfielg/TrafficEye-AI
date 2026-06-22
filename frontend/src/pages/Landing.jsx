@@ -10,11 +10,11 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           
           {/* Logo & Brand */}
-          <div className="flex items-center gap-4">
-            <Logo className="w-10 h-10" />
+          <Link to="/" className="flex items-center gap-4 group cursor-pointer">
+            <Logo className="w-10 h-10 group-hover:scale-105 transition-transform" />
             <div>
-              <h1 className="font-display text-3xl font-bold tracking-wider text-paper leading-none">
-                TRAFFIC <span className="text-amber">EYE</span>
+              <h1 className="font-display text-3xl font-bold tracking-wider text-paper leading-none group-hover:text-amber transition-colors">
+                TRAFFIC <span className="text-amber group-hover:text-paper transition-colors">EYE</span>
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 rounded-full bg-radar animate-pulse"></div>
@@ -23,7 +23,7 @@ export default function Landing() {
                 </span>
               </div>
             </div>
-          </div>
+          </Link>
           
           {/* Header Actions */}
           <div>
@@ -88,7 +88,7 @@ export default function Landing() {
             {/* Stat Strip */}
             <div className="mt-auto border-t border-concrete/20 pt-8 w-full max-w-4xl">
               <p className="font-mono text-concrete text-sm md:text-base tracking-widest uppercase">
-                2 VIOLATION TYPES TRACKED &nbsp;&middot;&nbsp; REAL-TIME OCR &nbsp;&middot;&nbsp; LIVE DASHBOARD
+                4 VIOLATION TYPES DETECTED &nbsp;&middot;&nbsp; REAL-TIME OCR &nbsp;&middot;&nbsp; LIVE DASHBOARD
               </p>
             </div>
 
@@ -215,6 +215,8 @@ export default function Landing() {
               {[
                 { code: "TFC-01", title: "Helmet Violation", desc: "Detects unhelmeted riders overlapping with active motorcycles." },
                 { code: "TFC-02", title: "Triple Riding", desc: "Flags motorcycles carrying three or more passengers." },
+                { code: "TFC-03", title: "Seatbelt Non-Compliance", desc: "Detects unbuckled drivers located inside vehicle cabin bounding boxes." },
+                { code: "TFC-04", title: "Illegal Parking", desc: "Identifies unauthorized stationary vehicles occupying restricted perimeter zones." },
                 { code: "OCR-01", title: "License Plate OCR", desc: "Automated number plate extraction from localized crops." },
                 { code: "EVD-01", title: "Evidence Generation", desc: "Annotated proof images hard-burned with bounding boxes and confidence scores." },
                 { code: "DB-01", title: "Repeat Offender Watch-List", desc: "Automatically flags vehicles with multiple violations across the system." },
@@ -242,8 +244,8 @@ export default function Landing() {
                   Future Expansion
                 </h3>
                 <ul className="font-sans text-concrete text-lg leading-relaxed list-disc list-inside space-y-2 mb-4">
-                  <li>Seatbelt detection</li>
-                  <li>Illegal parking via frame tracking</li>
+                  <li>Red light violation detection</li>
+                  <li>Speed limit enforcement via multi-frame tracking</li>
                 </ul>
                 <p className="font-mono text-xs text-concrete/60 uppercase tracking-widest mt-auto border-t border-concrete/20 pt-4">
                   * Honest scoping: these features are planned for future versions, not active in the current demo.

@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getViolationCode } from '../constants';
+import { getViolationCode, getViolationColor } from '../constants';
+import EChallanModal from './EChallanModal';
 
 export default function ViolationCard({ violation }) {
-  const { type, confidence, vehicle_number } = violation;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { type, confidence, vehicle_number, vehicle_type } = violation;
   const code = getViolationCode(type);
   
   // Convert confidence to integer percentage
@@ -14,7 +17,10 @@ export default function ViolationCard({ violation }) {
   else if (confPercent >= 70) confColor = 'text-amber';
 
   return (
-    <div className="bg-paper text-asphalt p-6 border-l-[6px] border-violation shadow-lg flex flex-col justify-between h-full">
+    <div 
+      className="bg-paper text-asphalt p-6 border-l-[6px] shadow-lg flex flex-col justify-between h-full"
+      style={{ borderColor: getViolationColor(type) }}
+    >
       <div>
         <div className="flex justify-between items-start mb-1">
           {/* Eyebrow Label */}
@@ -37,13 +43,28 @@ export default function ViolationCard({ violation }) {
           <span className="block font-mono text-xs font-bold text-asphalt/50 tracking-widest uppercase mb-2">
             Target Vehicle
           </span>
-          {vehicle_number ? (
+          {(!vehicle_number || vehicle_number.toUpperCase() === 'UNREADABLE' || vehicle_number.includes('No Plate Detected')) ? (
+             <div className="inline-flex flex-col items-start gap-1">
+               <span className="bg-asphalt text-concrete font-mono text-xl font-bold tracking-widest px-4 py-2 border border-asphalt rounded-sm">
+                 {vehicle_type || 'VEHICLE DETECTED'}
+               </span>
+               <span className="bg-violation/10 text-violation font-bold text-[10px] uppercase tracking-widest px-2 py-0.5 border border-violation/30">
+                 Plate Unclear
+               </span>
+             </div>
+          ) : (
             <div className="inline-block bg-asphalt text-amber font-mono text-2xl font-bold tracking-[0.25em] px-4 py-2 border border-asphalt rounded-sm">
               {vehicle_number.replace(/(.{2})(.{2})(.{2})(.{4})/, "$1 $2 $3 $4")}
             </div>
-          ) : (
-            <div className="inline-block bg-asphalt/10 text-asphalt/40 font-mono text-xl tracking-widest px-4 py-2 border border-asphalt/20 rounded-sm">
-              UNREADABLE
+          )}
+          {type === 'Triple Riding' && (
+            <div className="mt-3 font-mono text-sm font-bold text-violation tracking-widest uppercase">
+              3+ Riders Detected
+            </div>
+          )}
+          {type === 'Helmet Violation' && (
+            <div className="mt-3 font-mono text-sm font-bold text-violation tracking-widest uppercase">
+              No Helmet Detected
             </div>
           )}
         </div>
@@ -63,7 +84,19 @@ export default function ViolationCard({ violation }) {
             History unavailable
           </span>
         )}
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="w-full mt-4 bg-amber/10 border-2 border-amber text-amber font-mono font-bold uppercase tracking-widest px-4 py-3 hover:bg-amber hover:text-asphalt transition-colors"
+        >
+          [ GENERATE E-CHALLAN ]
+        </button>
       </div>
+
+      <EChallanModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        violation={violation} 
+      />
     </div>
   );
 }

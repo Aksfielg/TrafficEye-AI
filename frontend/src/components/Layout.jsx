@@ -14,11 +14,11 @@ export default function Layout({ children }) {
     <div className="min-h-screen flex flex-col">
       <header className="bg-asphalt border-b-[3px] border-amber sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Logo className="w-10 h-10" />
+          <Link to="/" className="flex items-center gap-4 group">
+            <Logo className="w-10 h-10 group-hover:scale-105 transition-transform" />
             <div>
-              <h1 className="font-display text-3xl font-bold tracking-wider text-paper leading-none">
-                TRAFFIC <span className="text-amber">EYE</span>
+              <h1 className="font-display text-3xl font-bold tracking-wider text-paper leading-none group-hover:text-amber transition-colors">
+                TRAFFIC <span className="text-amber group-hover:text-paper transition-colors">EYE</span>
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <div className="w-2 h-2 rounded-full bg-radar animate-pulse"></div>
@@ -27,7 +27,7 @@ export default function Layout({ children }) {
                 </span>
               </div>
             </div>
-          </div>
+          </Link>
           
           <nav className="flex gap-8">
             {navLinks.map(link => {

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { getViolationCode } from '../constants';
+import { getViolationCode, getViolationColor } from '../constants';
 import { API_BASE_URL } from '../config';
+import EChallanModal from '../components/EChallanModal';
 
 export default function History() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -11,6 +12,7 @@ export default function History() {
   const [violations, setViolations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedViolation, setSelectedViolation] = useState(null);
   
   // Sort state
   const [sortOrder, setSortOrder] = useState('desc'); // 'desc' or 'asc'
@@ -71,6 +73,7 @@ export default function History() {
   };
 
   return (
+    <>
     <div className="flex flex-col gap-8 w-full max-w-7xl">
       <div className="flex items-center gap-4 border-b-2 border-asphalt/50 pb-4">
         <div className="w-4 h-4 bg-radar rounded-none shadow-[0_0_10px_rgba(63,193,201,0.5)]"></div>
@@ -147,6 +150,7 @@ export default function History() {
                   <th className="p-5">Target Plate</th>
                   <th className="p-5">Violation Offense</th>
                   <th className="p-5 text-right">Confidence</th>
+                  <th className="p-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-concrete/10">
@@ -177,15 +181,29 @@ export default function History() {
                       
                       {/* Plate */}
                       <td className="p-5">
-                        <span className="inline-block bg-black/60 text-amber font-mono font-bold tracking-[0.2em] px-4 py-2 border border-concrete/20">
-                          {v.vehicle_number || 'UNREADABLE'}
-                        </span>
+                        {(!v.vehicle_number || v.vehicle_number.toUpperCase() === 'UNREADABLE' || v.vehicle_number.includes('No Plate Detected')) ? (
+                          <div className="flex flex-col items-start gap-1">
+                            <span className="inline-block bg-black/60 text-concrete/80 font-mono font-bold tracking-[0.1em] px-4 py-2 border border-concrete/20">
+                              {v.vehicle_type || "VEHICLE DETECTED"}
+                            </span>
+                            <span className="bg-violation/20 text-violation text-[10px] uppercase tracking-widest px-2 py-0.5 border border-violation/30">
+                              Plate Unclear
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="inline-block bg-black/60 text-amber font-mono font-bold tracking-[0.2em] px-4 py-2 border border-concrete/20">
+                            {v.vehicle_number}
+                          </span>
+                        )}
                       </td>
                       
                       {/* Violation Code & Name */}
                       <td className="p-5">
                         <div className="flex flex-col">
-                          <span className="font-display text-2xl text-paper uppercase tracking-wider leading-none">
+                          <span 
+                            className="font-display text-2xl uppercase tracking-wider leading-none"
+                            style={{ color: getViolationColor(v.violation_type) }}
+                          >
                             {v.violation_type}
                           </span>
                           <span className="font-mono text-xs text-concrete uppercase tracking-widest mt-2 font-bold">
@@ -198,6 +216,16 @@ export default function History() {
                       <td className={`p-5 text-right font-mono font-bold text-2xl tracking-widest ${confColor}`}>
                         {confPercent}%
                       </td>
+                      
+                      {/* Actions */}
+                      <td className="p-5 text-right">
+                        <button
+                          onClick={() => setSelectedViolation(v)}
+                          className="bg-amber/10 text-amber border border-amber font-mono font-bold uppercase tracking-widest text-xs px-4 py-2 hover:bg-amber hover:text-asphalt transition-colors whitespace-nowrap"
+                        >
+                          [ GENERATE E-CHALLAN ]
+                        </button>
+                      </td>
                     </tr>
                   )
                 })}
@@ -208,5 +236,11 @@ export default function History() {
       </div>
 
     </div>
+    <EChallanModal 
+      isOpen={!!selectedViolation} 
+      onClose={() => setSelectedViolation(null)} 
+      violation={selectedViolation} 
+    />
+    </>
   );
 }

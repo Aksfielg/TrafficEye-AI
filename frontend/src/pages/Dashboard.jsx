@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { getViolationCode } from '../constants';
+import { getViolationCode, getViolationColor } from '../constants';
 import { API_BASE_URL } from '../config';
-
-const COLORS = ['#E2462F', '#FFB627', '#3FC1C9', '#9CA3AF']; // violation, amber, radar, concrete
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -76,7 +74,11 @@ export default function Dashboard() {
   const pieData = [];
   if (data?.violations_by_type) {
     Object.entries(data.violations_by_type).forEach(([type, count]) => {
-      pieData.push({ name: `${getViolationCode(type)} - ${type}`, value: count });
+      pieData.push({ 
+        name: `${getViolationCode(type)} - ${type}`, 
+        value: count,
+        color: getViolationColor(type)
+      });
       if (count > maxCount) {
         maxCount = count;
         mostCommonType = getViolationCode(type);
@@ -92,6 +94,16 @@ export default function Dashboard() {
       const label = hour.padStart(2, '0') + "00";
       barData.push({ time: label, count });
     });
+  }
+
+  // Format Location Bar Chart Data
+  const locationData = [];
+  if (data?.violations_by_location) {
+    Object.entries(data.violations_by_location).forEach(([loc, count]) => {
+      locationData.push({ location: loc, count });
+    });
+    // Sort by count descending
+    locationData.sort((a, b) => b.count - a.count);
   }
 
   return (
@@ -138,9 +150,14 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-2 h-2 bg-amber animate-pulse rounded-full shadow-[0_0_8px_rgba(255,182,39,0.8)]"></div>
-          <h3 className="font-mono text-sm font-bold text-amber tracking-[0.2em] uppercase">
-            AI Tactical Insight
-          </h3>
+          <div className="flex flex-col">
+            <h3 className="font-mono text-sm font-bold text-amber tracking-[0.2em] uppercase">
+              Predictive Deployment AI
+            </h3>
+            <span className="font-mono text-[10px] text-amber/60 tracking-widest uppercase mt-1">
+              Analyzing spatial & temporal metadata for next-hour patrol predictions
+            </span>
+          </div>
         </div>
         <div className="relative z-10">
           {insightsLoading ? (
@@ -178,7 +195,7 @@ export default function Dashboard() {
                   stroke="none"
                 >
                   {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip 
@@ -230,6 +247,51 @@ export default function Dashboard() {
 
       </div>
 
+      {/* Horizontal Bar Chart: Violations by Location */}
+      <div className="bg-asphalt border border-concrete/20 p-6 flex flex-col shadow-lg">
+        <h3 className="font-mono text-sm font-bold text-concrete tracking-widest uppercase mb-6 border-b border-concrete/10 pb-3">
+          Hotspot Analysis (Violations by Location)
+        </h3>
+        <div className="h-[300px]">
+          {locationData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={locationData} layout="vertical" margin={{ top: 10, right: 10, left: 40, bottom: 0 }}>
+                <XAxis 
+                  type="number"
+                  stroke="#9CA3AF" 
+                  tick={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12 }} 
+                  tickLine={false}
+                  axisLine={{ stroke: '#9CA3AF', strokeWidth: 1, opacity: 0.3 }}
+                  allowDecimals={false}
+                />
+                <YAxis 
+                  dataKey="location" 
+                  type="category"
+                  stroke="#9CA3AF" 
+                  tick={{ fontFamily: '"IBM Plex Mono", monospace', fontSize: 12, fill: '#3FC1C9' }} 
+                  tickLine={false}
+                  axisLine={false}
+                  width={150}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(255, 255, 255, 0.03)' }}
+                  contentStyle={{ backgroundColor: '#14171B', borderColor: '#3FC1C9', borderRadius: 0, borderWidth: 2 }}
+                  itemStyle={{ fontFamily: '"IBM Plex Mono", monospace', color: '#3FC1C9', fontWeight: 'bold' }}
+                  labelStyle={{ fontFamily: '"IBM Plex Mono", monospace', color: '#9CA3AF' }}
+                />
+                <Bar dataKey="count" fill="#3FC1C9" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex-1 flex items-center justify-center h-full">
+              <span className="font-mono text-concrete/40 tracking-widest border border-concrete/10 px-4 py-2">
+                NO DATA AWAITING SCANS
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Repeat Offenders Watch-List */}
       <div className="bg-asphalt border border-concrete/20 p-6 shadow-lg">
         <h3 className="font-mono text-sm font-bold text-concrete tracking-widest uppercase mb-6 border-b border-concrete/10 pb-3">
@@ -247,7 +309,14 @@ export default function Dashboard() {
                 <div className="flex items-center gap-6">
                   <span className="font-mono text-concrete/40 w-6 font-bold">{idx + 1}.</span>
                   <span className="font-mono text-2xl font-bold tracking-[0.25em] text-paper group-hover:text-amber transition-colors">
-                    {offender.vehicle_number.replace(/(.{2})(.{2})(.{2})(.{4})/, "$1 $2 $3 $4")}
+                    {(!offender.vehicle_number || offender.vehicle_number.toUpperCase() === 'UNREADABLE' || offender.vehicle_number.includes('No Plate Detected')) ? (
+                      <div className="flex flex-col items-start gap-1 mt-1">
+                         <span className="text-xl tracking-widest">{offender.vehicle_type || 'VEHICLE DETECTED'}</span>
+                         <span className="bg-violation/20 text-violation text-[10px] uppercase tracking-widest px-2 py-0.5 border border-violation/30">Plate Unclear</span>
+                      </div>
+                    ) : (
+                      offender.vehicle_number.replace(/(.{2})(.{2})(.{2})(.{4})/, "$1 $2 $3 $4")
+                    )}
                   </span>
                 </div>
                 <div className="flex items-center gap-4">
