@@ -4,15 +4,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Get DB URL from environment variable
-db_url = os.getenv("SUPABASE_DB_URL")
-
-# Make sure db_url exists
-if not db_url:
-    raise ValueError("SUPABASE_DB_URL environment variable is not set")
+# Get DB URL from environment variable, but override it to use SQLite due to Supabase inactivity
+db_url = "sqlite:///./traffic_eye.db"
 
 # Create the SQLModel engine
-engine = create_engine(db_url, echo=True)
+engine = create_engine(db_url, echo=True, connect_args={"check_same_thread": False})
 
 def create_db_and_tables():
     # Import models here to avoid circular imports and ensure they are registered
