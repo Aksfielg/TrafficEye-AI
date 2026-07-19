@@ -27,7 +27,7 @@ export default function Dashboard() {
         setLoading(false);
       });
 
-    fetch(`${API_BASE_URL}/api/analytics/insights/`)
+    fetch(`${API_BASE_URL}/api/analytics/insights`)
       .then(res => res.json())
       .then(json => {
         setInsights(json.insights);
